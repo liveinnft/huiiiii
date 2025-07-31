@@ -91,38 +91,53 @@ public class PixelArtView extends View {
 
     private void drawPixelArt(Canvas canvas) {
         float baseSize = 200f;
-        float pixelBaseSize = pixelSize;
         
-        // Рисуем центральный элемент (лист/пламя)
-        drawCentralElement(canvas, baseSize, pixelBaseSize);
+        // Рисуем центральный элемент (стилизованный лист/закругленный крест)
+        drawCentralLeaf(canvas, baseSize);
         
         // Рисуем диагональные линии
-        drawDiagonalLines(canvas, baseSize, pixelBaseSize);
+        drawDiagonalLines(canvas, baseSize);
         
         // Рисуем круговые элементы
-        drawCircularElements(canvas, baseSize, pixelBaseSize);
+        drawCircularElements(canvas, baseSize);
     }
 
-    private void drawCentralElement(Canvas canvas, float baseSize, float pixelSize) {
-        float leafWidth = baseSize * 0.4f;
-        float leafHeight = baseSize * 0.6f;
+    private void drawCentralLeaf(Canvas canvas, float baseSize) {
+        float leafWidth = baseSize * 0.5f;
+        float leafHeight = baseSize * 0.7f;
         
         // Добавляем случайные погрешности
         float noiseX = (random.nextFloat() - 0.5f) * noiseLevel * leafWidth;
         float noiseY = (random.nextFloat() - 0.5f) * noiseLevel * leafHeight;
         
-        // Рисуем лист/пламя в пиксельном стиле
+        // Рисуем центральный лист как закругленный крест
         List<PointF> points = new ArrayList<>();
         
         // Создаем точки для листа с пикселизацией
-        for (int i = 0; i <= 20; i++) {
-            float t = i / 20f;
-            float x = (t - 0.5f) * leafWidth + noiseX;
-            float y;
-            if (t < 0.5f) {
-                y = -leafHeight * 0.5f * (1f - 4f * (t - 0.5f) * (t - 0.5f)) + noiseY;
+        for (int i = 0; i <= 30; i++) {
+            float t = i / 30f;
+            float x, y;
+            
+            if (t < 0.25f) {
+                // Верхняя часть
+                float localT = t / 0.25f;
+                x = (localT - 0.5f) * leafWidth * 0.3f + noiseX;
+                y = -leafHeight * 0.5f * (1f - 4f * (localT - 0.5f) * (localT - 0.5f)) + noiseY;
+            } else if (t < 0.5f) {
+                // Правая часть
+                float localT = (t - 0.25f) / 0.25f;
+                x = leafWidth * 0.5f * (1f - 4f * (localT - 0.5f) * (localT - 0.5f)) + noiseX;
+                y = (localT - 0.5f) * leafHeight * 0.3f + noiseY;
+            } else if (t < 0.75f) {
+                // Нижняя часть
+                float localT = (t - 0.5f) / 0.25f;
+                x = (localT - 0.5f) * leafWidth * 0.3f + noiseX;
+                y = leafHeight * 0.5f * (1f - 4f * (localT - 0.5f) * (localT - 0.5f)) + noiseY;
             } else {
-                y = -leafHeight * 0.3f * (1f - 4f * (t - 0.5f) * (t - 0.5f)) + noiseY;
+                // Левая часть
+                float localT = (t - 0.75f) / 0.25f;
+                x = -leafWidth * 0.5f * (1f - 4f * (localT - 0.5f) * (localT - 0.5f)) + noiseX;
+                y = (localT - 0.5f) * leafHeight * 0.3f + noiseY;
             }
             
             // Пикселизуем координаты
@@ -145,8 +160,8 @@ public class PixelArtView extends View {
         }
     }
 
-    private void drawDiagonalLines(Canvas canvas, float baseSize, float pixelSize) {
-        float lineLength = baseSize * 0.8f;
+    private void drawDiagonalLines(Canvas canvas, float baseSize) {
+        float lineLength = baseSize * 0.9f;
         
         // Рисуем 4 диагональные линии
         float[] angles = {45f, 135f, 225f, 315f};
@@ -193,9 +208,9 @@ public class PixelArtView extends View {
         }
     }
 
-    private void drawCircularElements(Canvas canvas, float baseSize, float pixelSize) {
-        float circleRadius = baseSize * 0.15f;
-        float distance = baseSize * 0.4f;
+    private void drawCircularElements(Canvas canvas, float baseSize) {
+        float circleRadius = baseSize * 0.18f;
+        float distance = baseSize * 0.45f;
         
         // Позиции для 4 кругов
         PointF[] positions = {
@@ -217,7 +232,7 @@ public class PixelArtView extends View {
             drawPixelatedCircle(canvas, centerX, centerY, circleRadius, pixelSize);
             
             // Рисуем внутренний лист в круге
-            drawInnerLeaf(canvas, centerX, centerY, circleRadius * 0.6f, pixelSize);
+            drawInnerLeaf(canvas, centerX, centerY, circleRadius * 0.7f, pixelSize);
         }
     }
 
@@ -245,8 +260,8 @@ public class PixelArtView extends View {
     }
 
     private void drawInnerLeaf(Canvas canvas, float centerX, float centerY, float size, float pixelSize) {
-        float leafWidth = size * 0.6f;
-        float leafHeight = size * 0.8f;
+        float leafWidth = size * 0.8f;
+        float leafHeight = size * 1.0f;
         
         // Добавляем случайные погрешности
         float noiseX = (random.nextFloat() - 0.5f) * noiseLevel * leafWidth;
@@ -254,15 +269,15 @@ public class PixelArtView extends View {
         
         List<PointF> points = new ArrayList<>();
         
-        // Создаем точки для внутреннего листа
-        for (int i = 0; i <= 15; i++) {
-            float t = i / 15f;
+        // Создаем точки для внутреннего листа (более простой формы)
+        for (int i = 0; i <= 20; i++) {
+            float t = i / 20f;
             float x = centerX + (t - 0.5f) * leafWidth + noiseX;
             float y;
             if (t < 0.5f) {
-                y = centerY - leafHeight * 0.5f * (1f - 4f * (t - 0.5f) * (t - 0.5f)) + noiseY;
+                y = centerY - leafHeight * 0.6f * (1f - 4f * (t - 0.5f) * (t - 0.5f)) + noiseY;
             } else {
-                y = centerY - leafHeight * 0.3f * (1f - 4f * (t - 0.5f) * (t - 0.5f)) + noiseY;
+                y = centerY - leafHeight * 0.4f * (1f - 4f * (t - 0.5f) * (t - 0.5f)) + noiseY;
             }
             
             // Пикселизуем координаты
