@@ -28,7 +28,7 @@ public class PixelArtView extends View {
     // Цвета для разноцветного рисования
     private int[] colors = {
         Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, 
-        Color.MAGENTA, Color.CYAN, Color.ORANGE, Color.PINK,
+        Color.MAGENTA, Color.CYAN, Color.rgb(255, 165, 0), Color.rgb(255, 192, 203),
         Color.LTGRAY, Color.DKGRAY, Color.WHITE
     };
 
