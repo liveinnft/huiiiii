@@ -1,5 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
-<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@color/black"/>
-    <foreground android:drawable="@drawable/ic_launcher_foreground"/>
-</adaptive-icon>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="72dp"
+    android:height="72dp"
+    android:viewportWidth="72"
+    android:viewportHeight="72">
+    
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M36,15 L36,57 M15,36 L57,36 M20,20 L52,52 M20,52 L52,20"/>
+    
+    <circle
+        android:fillColor="#FFFFFF"
+        android:cx="20"
+        android:cy="20"
+        android:r="5"/>
+    
+    <circle
+        android:fillColor="#FFFFFF"
+        android:cx="52"
+        android:cy="20"
+        android:r="5"/>
+    
+    <circle
+        android:fillColor="#FFFFFF"
+        android:cx="20"
+        android:cy="52"
+        android:r="5"/>
+    
+    <circle
+        android:fillColor="#FFFFFF"
+        android:cx="52"
+        android:cy="52"
+        android:r="5"/>
+</vector>
