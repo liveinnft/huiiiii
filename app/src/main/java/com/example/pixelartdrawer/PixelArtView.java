@@ -107,8 +107,8 @@ public class PixelArtView extends View {
     }
 
     private void drawConnectedCircles(Canvas canvas, float baseSize) {
-        float circleRadius = baseSize * 0.15f;
-        float circleDistance = baseSize * 0.25f; // Расстояние между центрами кругов
+        float circleRadius = baseSize * 0.25f; // Увеличил с 0.15f до 0.25f
+        float circleDistance = baseSize * 0.35f; // Увеличил с 0.25f до 0.35f - расстояние между центрами кругов
         
         // Добавляем случайные погрешности
         float noiseX1 = (random.nextFloat() - 0.5f) * noiseLevel * circleRadius;
@@ -122,16 +122,16 @@ public class PixelArtView extends View {
         
         // Левый круг
         paint.setColor(circleColor1);
-        drawPixelatedCircle(canvas, -circleDistance/2 + noiseX1, baseSize * 0.2f + noiseY1, circleRadius, paint);
+        drawPixelatedCircle(canvas, -circleDistance/2 + noiseX1, baseSize * 0.3f + noiseY1, circleRadius, paint);
         
         // Правый круг
         paint.setColor(circleColor2);
-        drawPixelatedCircle(canvas, circleDistance/2 + noiseX2, baseSize * 0.2f + noiseY2, circleRadius, paint);
+        drawPixelatedCircle(canvas, circleDistance/2 + noiseX2, baseSize * 0.3f + noiseY2, circleRadius, paint);
     }
 
     private void drawStick(Canvas canvas, float baseSize) {
-        float stickWidth = baseSize * 0.08f;
-        float stickHeight = baseSize * 0.6f;
+        float stickWidth = baseSize * 0.15f; // Увеличил с 0.08f до 0.15f
+        float stickHeight = baseSize * 0.8f; // Увеличил с 0.6f до 0.8f
         
         // Добавляем случайные погрешности
         float noiseX = (random.nextFloat() - 0.5f) * noiseLevel * stickWidth;
@@ -143,7 +143,7 @@ public class PixelArtView extends View {
         
         // Рисуем палку как прямоугольник с закругленными краями
         float stickX = noiseX;
-        float stickY = -baseSize * 0.1f + noiseY; // Начинается от места соединения кругов
+        float stickY = -baseSize * 0.2f + noiseY; // Начинается от места соединения кругов
         
         // Рисуем основную часть палки
         drawPixelatedRectangle(canvas, stickX, stickY, stickWidth, stickHeight, paint);
