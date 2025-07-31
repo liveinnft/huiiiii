@@ -89,7 +89,7 @@ public class PixelArtView extends View {
         canvas.scale(scale, scale);
         canvas.rotate(rotation * 360f);
         
-        // Рисуем пиксельную версию картинки
+        // Рисуем пиксельную версию смайлика
         drawPixelArt(canvas);
         
         // Восстанавливаем состояние canvas
@@ -99,157 +99,117 @@ public class PixelArtView extends View {
     private void drawPixelArt(Canvas canvas) {
         float baseSize = 200f;
         
-        // Рисуем два соединенных круга внизу
-        drawConnectedCircles(canvas, baseSize);
+        // Рисуем основную форму смайлика (круг)
+        drawSmileyFace(canvas, baseSize);
         
-        // Рисуем закругленную палку сверху
-        drawRoundedStick(canvas, baseSize);
+        // Рисуем глаза
+        drawEyes(canvas, baseSize);
+        
+        // Рисуем нос
+        drawNose(canvas, baseSize);
+        
+        // Рисуем рот
+        drawMouth(canvas, baseSize);
     }
 
-    private void drawConnectedCircles(Canvas canvas, float baseSize) {
-        float circleRadius = baseSize * 0.25f;
-        float circleDistance = baseSize * 0.15f; // Расстояние между центрами кругов
-        float verticalStretch = 1.2f; // Вертикальное вытягивание
-        
-        // Позиции центров кругов
-        float leftCircleX = -circleDistance / 2f;
-        float rightCircleX = circleDistance / 2f;
-        float circleY = baseSize * 0.3f; // Круги внизу
+    private void drawSmileyFace(Canvas canvas, float baseSize) {
+        float faceRadius = baseSize * 0.4f;
         
         // Добавляем случайные погрешности
-        float noiseX1 = (random.nextFloat() - 0.5f) * noiseLevel * circleRadius;
-        float noiseY1 = (random.nextFloat() - 0.5f) * noiseLevel * circleRadius;
-        float noiseX2 = (random.nextFloat() - 0.5f) * noiseLevel * circleRadius;
-        float noiseY2 = (random.nextFloat() - 0.5f) * noiseLevel * circleRadius;
+        float noiseX = (random.nextFloat() - 0.5f) * noiseLevel * faceRadius;
+        float noiseY = (random.nextFloat() - 0.5f) * noiseLevel * faceRadius;
         
-        // Выбираем случайные цвета для кругов
-        int color1 = colors[random.nextInt(colors.length)];
-        int color2 = colors[random.nextInt(colors.length)];
+        // Выбираем случайный цвет для лица
+        int faceColor = colors[random.nextInt(colors.length)];
+        paint.setColor(faceColor);
         
-        // Рисуем левый круг
-        drawPixelatedEllipse(canvas, leftCircleX + noiseX1, circleY + noiseY1, 
-                           circleRadius, circleRadius * verticalStretch, color1);
-        
-        // Рисуем правый круг
-        drawPixelatedEllipse(canvas, rightCircleX + noiseX2, circleY + noiseY2, 
-                           circleRadius, circleRadius * verticalStretch, color2);
-        
-        // Рисуем область соединения кругов
-        drawConnectionArea(canvas, leftCircleX + noiseX1, rightCircleX + noiseX2, 
-                         circleY + (noiseY1 + noiseY2) / 2f, circleRadius, verticalStretch);
+        // Рисуем круглое лицо в пиксельном стиле
+        drawPixelatedCircle(canvas, noiseX, noiseY, faceRadius, paint);
     }
 
-    private void drawPixelatedEllipse(Canvas canvas, float centerX, float centerY, 
-                                    float radiusX, float radiusY, int color) {
-        paint.setColor(color);
+    private void drawEyes(Canvas canvas, float baseSize) {
+        float eyeRadius = baseSize * 0.08f;
+        float eyeDistance = baseSize * 0.15f;
         
-        int stepsX = (int) (radiusX * 2 / pixelSize);
-        int stepsY = (int) (radiusY * 2 / pixelSize);
+        // Добавляем случайные погрешности
+        float noiseX1 = (random.nextFloat() - 0.5f) * noiseLevel * eyeRadius;
+        float noiseY1 = (random.nextFloat() - 0.5f) * noiseLevel * eyeRadius;
+        float noiseX2 = (random.nextFloat() - 0.5f) * noiseLevel * eyeRadius;
+        float noiseY2 = (random.nextFloat() - 0.5f) * noiseLevel * eyeRadius;
         
-        for (int i = -stepsX; i <= stepsX; i++) {
-            for (int j = -stepsY; j <= stepsY; j++) {
-                float x = centerX + i * pixelSize;
-                float y = centerY + j * pixelSize;
+        // Выбираем случайные цвета для глаз
+        int eyeColor1 = colors[random.nextInt(colors.length)];
+        int eyeColor2 = colors[random.nextInt(colors.length)];
+        
+        // Левый глаз
+        paint.setColor(eyeColor1);
+        drawPixelatedCircle(canvas, -eyeDistance/2 + noiseX1, -baseSize * 0.1f + noiseY1, eyeRadius, paint);
+        
+        // Правый глаз
+        paint.setColor(eyeColor2);
+        drawPixelatedCircle(canvas, eyeDistance/2 + noiseX2, -baseSize * 0.1f + noiseY2, eyeRadius, paint);
+    }
+
+    private void drawNose(Canvas canvas, float baseSize) {
+        float noseWidth = baseSize * 0.06f;
+        float noseHeight = baseSize * 0.04f;
+        
+        // Добавляем случайные погрешности
+        float noiseX = (random.nextFloat() - 0.5f) * noiseLevel * noseWidth;
+        float noiseY = (random.nextFloat() - 0.5f) * noiseLevel * noseHeight;
+        
+        // Выбираем случайный цвет для носа
+        int noseColor = colors[random.nextInt(colors.length)];
+        paint.setColor(noseColor);
+        
+        // Рисуем нос как маленький прямоугольник
+        float noseX = noiseX;
+        float noseY = baseSize * 0.05f + noiseY;
+        
+        int stepsX = (int) (noseWidth / pixelSize);
+        int stepsY = (int) (noseHeight / pixelSize);
+        
+        for (int i = -stepsX/2; i <= stepsX/2; i++) {
+            for (int j = -stepsY/2; j <= stepsY/2; j++) {
+                float x = noseX + i * pixelSize;
+                float y = noseY + j * pixelSize;
                 
-                // Проверяем, находится ли точка внутри эллипса
-                float normalizedX = (x - centerX) / radiusX;
-                float normalizedY = (y - centerY) / radiusY;
-                float distance = normalizedX * normalizedX + normalizedY * normalizedY;
+                // Пикселизуем координаты
+                float pixelX = (float) Math.floor(x / pixelSize) * pixelSize;
+                float pixelY = (float) Math.floor(y / pixelSize) * pixelSize;
                 
-                if (distance <= 1.0f) {
-                    // Пикселизуем координаты
-                    float pixelX = (float) Math.floor(x / pixelSize) * pixelSize;
-                    float pixelY = (float) Math.floor(y / pixelSize) * pixelSize;
-                    
-                    RectF rect = new RectF(
-                        pixelX - pixelSize/2,
-                        pixelY - pixelSize/2,
-                        pixelX + pixelSize/2,
-                        pixelY + pixelSize/2
-                    );
-                    canvas.drawRect(rect, paint);
-                }
+                RectF rect = new RectF(
+                    pixelX - pixelSize/2,
+                    pixelY - pixelSize/2,
+                    pixelX + pixelSize/2,
+                    pixelY + pixelSize/2
+                );
+                canvas.drawRect(rect, paint);
             }
         }
     }
 
-    private void drawConnectionArea(Canvas canvas, float leftX, float rightX, 
-                                 float centerY, float radius, float stretch) {
-        // Выбираем случайный цвет для области соединения
-        int connectionColor = colors[random.nextInt(colors.length)];
-        paint.setColor(connectionColor);
-        
-        float connectionWidth = (rightX - leftX) * 0.6f; // Ширина области соединения
-        float connectionHeight = radius * stretch * 0.8f;
-        
-        int stepsX = (int) (connectionWidth / pixelSize);
-        int stepsY = (int) (connectionHeight / pixelSize);
-        
-        for (int i = 0; i <= stepsX; i++) {
-            for (int j = -stepsY; j <= stepsY; j++) {
-                float x = leftX + i * pixelSize;
-                float y = centerY + j * pixelSize;
-                
-                // Создаем плавное соединение между кругами
-                float t = i / (float) stepsX;
-                float blendRadius = radius * (0.8f + 0.2f * (float) Math.sin(t * Math.PI));
-                
-                float normalizedX = (x - (leftX + rightX) / 2f) / (connectionWidth / 2f);
-                float normalizedY = (y - centerY) / (blendRadius * stretch);
-                float distance = normalizedX * normalizedX + normalizedY * normalizedY;
-                
-                if (distance <= 1.0f) {
-                    // Пикселизуем координаты
-                    float pixelX = (float) Math.floor(x / pixelSize) * pixelSize;
-                    float pixelY = (float) Math.floor(y / pixelSize) * pixelSize;
-                    
-                    RectF rect = new RectF(
-                        pixelX - pixelSize/2,
-                        pixelY - pixelSize/2,
-                        pixelX + pixelSize/2,
-                        pixelY + pixelSize/2
-                    );
-                    canvas.drawRect(rect, paint);
-                }
-            }
-        }
-    }
-
-    private void drawRoundedStick(Canvas canvas, float baseSize) {
-        float stickWidth = baseSize * 0.15f;
-        float stickHeight = baseSize * 0.8f;
-        float stickStartY = -baseSize * 0.2f; // Начинается выше кругов
+    private void drawMouth(Canvas canvas, float baseSize) {
+        float mouthWidth = baseSize * 0.25f;
+        float mouthHeight = baseSize * 0.12f;
         
         // Добавляем случайные погрешности
-        float noiseX = (random.nextFloat() - 0.5f) * noiseLevel * stickWidth;
-        float noiseY = (random.nextFloat() - 0.5f) * noiseLevel * stickHeight;
+        float noiseX = (random.nextFloat() - 0.5f) * noiseLevel * mouthWidth;
+        float noiseY = (random.nextFloat() - 0.5f) * noiseLevel * mouthHeight;
         
-        // Выбираем случайный цвет для палки
-        int stickColor = colors[random.nextInt(colors.length)];
-        paint.setColor(stickColor);
+        // Выбираем случайный цвет для рта
+        int mouthColor = colors[random.nextInt(colors.length)];
+        paint.setColor(mouthColor);
         
-        // Рисуем закругленную палку как набор прямоугольников
+        // Рисуем рот как дугу
         List<PointF> points = new ArrayList<>();
         
-        // Создаем точки для закругленной палки
-        for (int i = 0; i <= 40; i++) {
-            float t = i / 40f;
-            float x = noiseX;
-            float y;
-            
-            if (t < 0.1f) {
-                // Нижняя закругленная часть
-                float localT = t / 0.1f;
-                y = stickStartY + stickHeight * 0.1f * (1f - (float) Math.cos(localT * Math.PI / 2));
-            } else if (t > 0.9f) {
-                // Верхняя закругленная часть
-                float localT = (t - 0.9f) / 0.1f;
-                y = stickStartY + stickHeight * (0.9f + 0.1f * (float) Math.sin(localT * Math.PI / 2));
-            } else {
-                // Прямая часть
-                float localT = (t - 0.1f) / 0.8f;
-                y = stickStartY + stickHeight * (0.1f + 0.8f * localT);
-            }
+        // Создаем точки для дуги рта
+        for (int i = 0; i <= 20; i++) {
+            float t = i / 20f;
+            float angle = (float) (Math.PI * 0.8f * (t - 0.5f));
+            float x = noiseX + (float) Math.cos(angle) * mouthWidth / 2f;
+            float y = baseSize * 0.2f + noiseY + (float) Math.sin(angle) * mouthHeight / 2f;
             
             // Пикселизуем координаты
             float pixelX = (float) Math.floor(x / pixelSize) * pixelSize;
@@ -258,13 +218,13 @@ public class PixelArtView extends View {
             points.add(new PointF(pixelX, pixelY));
         }
         
-        // Рисуем палку как набор прямоугольников
+        // Рисуем рот как набор прямоугольников
         for (int i = 0; i < points.size() - 1; i++) {
             PointF point = points.get(i);
             
-            // Рисуем горизонтальную линию в каждой точке
-            int lineSteps = (int) (stickWidth / pixelSize);
-            for (int j = -lineSteps/2; j <= lineSteps/2; j++) {
+            // Рисуем горизонтальную линию в каждой точке для толщины
+            int lineSteps = (int) (pixelSize / 2);
+            for (int j = -lineSteps; j <= lineSteps; j++) {
                 float lineX = point.x + j * pixelSize;
                 float lineY = point.y;
                 
@@ -279,6 +239,33 @@ public class PixelArtView extends View {
                     pixelLineY + pixelSize/2
                 );
                 canvas.drawRect(rect, paint);
+            }
+        }
+    }
+
+    private void drawPixelatedCircle(Canvas canvas, float centerX, float centerY, float radius, Paint paint) {
+        int steps = (int) (radius * 2 / pixelSize);
+        
+        for (int i = -steps; i <= steps; i++) {
+            for (int j = -steps; j <= steps; j++) {
+                float x = centerX + i * pixelSize;
+                float y = centerY + j * pixelSize;
+                
+                float distance = (float) Math.sqrt((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY));
+                
+                if (distance <= radius) {
+                    // Пикселизуем координаты
+                    float pixelX = (float) Math.floor(x / pixelSize) * pixelSize;
+                    float pixelY = (float) Math.floor(y / pixelSize) * pixelSize;
+                    
+                    RectF rect = new RectF(
+                        pixelX - pixelSize/2,
+                        pixelY - pixelSize/2,
+                        pixelX + pixelSize/2,
+                        pixelY + pixelSize/2
+                    );
+                    canvas.drawRect(rect, paint);
+                }
             }
         }
     }
