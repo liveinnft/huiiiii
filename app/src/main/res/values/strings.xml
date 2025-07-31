@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Pixel Art Drawer</string>
+    <string name="draw_new">Нарисовать новую картинку</string>
+</resources>
