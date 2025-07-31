@@ -99,76 +99,81 @@ public class PixelArtView extends View {
     private void drawPixelArt(Canvas canvas) {
         float baseSize = 200f;
         
-        // Рисуем основную форму
-        drawMainShape(canvas, baseSize);
+        // Рисуем два соединенных круга внизу
+        drawConnectedCircles(canvas, baseSize);
         
-        // Рисуем детали
-        drawDetails(canvas, baseSize);
+        // Рисуем палку, идущую от места соединения кругов
+        drawStick(canvas, baseSize);
     }
 
-    private void drawMainShape(Canvas canvas, float baseSize) {
-        float mainWidth = baseSize * 0.3f;
-        float mainHeight = baseSize * 0.8f;
+    private void drawConnectedCircles(Canvas canvas, float baseSize) {
+        float circleRadius = baseSize * 0.15f;
+        float circleDistance = baseSize * 0.25f; // Расстояние между центрами кругов
         
         // Добавляем случайные погрешности
-        float noiseX = (random.nextFloat() - 0.5f) * noiseLevel * mainWidth;
-        float noiseY = (random.nextFloat() - 0.5f) * noiseLevel * mainHeight;
+        float noiseX1 = (random.nextFloat() - 0.5f) * noiseLevel * circleRadius;
+        float noiseY1 = (random.nextFloat() - 0.5f) * noiseLevel * circleRadius;
+        float noiseX2 = (random.nextFloat() - 0.5f) * noiseLevel * circleRadius;
+        float noiseY2 = (random.nextFloat() - 0.5f) * noiseLevel * circleRadius;
         
-        // Выбираем случайный цвет
-        int mainColor = colors[random.nextInt(colors.length)];
-        paint.setColor(mainColor);
+        // Выбираем случайные цвета для кругов
+        int circleColor1 = colors[random.nextInt(colors.length)];
+        int circleColor2 = colors[random.nextInt(colors.length)];
         
-        // Рисуем основную форму как эллипс
-        drawPixelatedEllipse(canvas, noiseX, noiseY, mainWidth, mainHeight, paint);
+        // Левый круг
+        paint.setColor(circleColor1);
+        drawPixelatedCircle(canvas, -circleDistance/2 + noiseX1, baseSize * 0.2f + noiseY1, circleRadius, paint);
+        
+        // Правый круг
+        paint.setColor(circleColor2);
+        drawPixelatedCircle(canvas, circleDistance/2 + noiseX2, baseSize * 0.2f + noiseY2, circleRadius, paint);
     }
 
-    private void drawDetails(Canvas canvas, float baseSize) {
-        float detailWidth = baseSize * 0.15f;
-        float detailHeight = baseSize * 0.2f;
+    private void drawStick(Canvas canvas, float baseSize) {
+        float stickWidth = baseSize * 0.08f;
+        float stickHeight = baseSize * 0.6f;
         
         // Добавляем случайные погрешности
-        float noiseX = (random.nextFloat() - 0.5f) * noiseLevel * detailWidth;
-        float noiseY = (random.nextFloat() - 0.5f) * noiseLevel * detailHeight;
+        float noiseX = (random.nextFloat() - 0.5f) * noiseLevel * stickWidth;
+        float noiseY = (random.nextFloat() - 0.5f) * noiseLevel * stickHeight;
         
-        // Выбираем случайный цвет для деталей
-        int detailColor = colors[random.nextInt(colors.length)];
-        paint.setColor(detailColor);
+        // Выбираем случайный цвет для палки
+        int stickColor = colors[random.nextInt(colors.length)];
+        paint.setColor(stickColor);
         
-        // Рисуем детали как маленькие круги
-        float detailX = noiseX;
-        float detailY = baseSize * 0.3f + noiseY;
+        // Рисуем палку как прямоугольник с закругленными краями
+        float stickX = noiseX;
+        float stickY = -baseSize * 0.1f + noiseY; // Начинается от места соединения кругов
         
-        drawPixelatedCircle(canvas, detailX, detailY, detailWidth/2, paint);
+        // Рисуем основную часть палки
+        drawPixelatedRectangle(canvas, stickX, stickY, stickWidth, stickHeight, paint);
+        
+        // Рисуем закругленный верх палки
+        float topRadius = stickWidth / 2f;
+        drawPixelatedCircle(canvas, stickX, stickY - stickHeight/2, topRadius, paint);
     }
 
-    private void drawPixelatedEllipse(Canvas canvas, float centerX, float centerY, 
-                                    float radiusX, float radiusY, Paint paint) {
-        int stepsX = (int) (radiusX * 2 / pixelSize);
-        int stepsY = (int) (radiusY * 2 / pixelSize);
+    private void drawPixelatedRectangle(Canvas canvas, float centerX, float centerY, 
+                                     float width, float height, Paint paint) {
+        int stepsX = (int) (width / pixelSize);
+        int stepsY = (int) (height / pixelSize);
         
-        for (int i = -stepsX; i <= stepsX; i++) {
-            for (int j = -stepsY; j <= stepsY; j++) {
+        for (int i = -stepsX/2; i <= stepsX/2; i++) {
+            for (int j = -stepsY/2; j <= stepsY/2; j++) {
                 float x = centerX + i * pixelSize;
                 float y = centerY + j * pixelSize;
                 
-                // Проверяем, находится ли точка внутри эллипса
-                float normalizedX = (x - centerX) / radiusX;
-                float normalizedY = (y - centerY) / radiusY;
-                float distance = normalizedX * normalizedX + normalizedY * normalizedY;
+                // Пикселизуем координаты
+                float pixelX = (float) Math.floor(x / pixelSize) * pixelSize;
+                float pixelY = (float) Math.floor(y / pixelSize) * pixelSize;
                 
-                if (distance <= 1.0f) {
-                    // Пикселизуем координаты
-                    float pixelX = (float) Math.floor(x / pixelSize) * pixelSize;
-                    float pixelY = (float) Math.floor(y / pixelSize) * pixelSize;
-                    
-                    RectF rect = new RectF(
-                        pixelX - pixelSize/2,
-                        pixelY - pixelSize/2,
-                        pixelX + pixelSize/2,
-                        pixelY + pixelSize/2
-                    );
-                    canvas.drawRect(rect, paint);
-                }
+                RectF rect = new RectF(
+                    pixelX - pixelSize/2,
+                    pixelY - pixelSize/2,
+                    pixelX + pixelSize/2,
+                    pixelY + pixelSize/2
+                );
+                canvas.drawRect(rect, paint);
             }
         }
     }
