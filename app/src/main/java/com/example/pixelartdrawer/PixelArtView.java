@@ -24,6 +24,13 @@ public class PixelArtView extends View {
     private float rotation = 0f;
     private float noiseLevel = 0.1f;
     private Random random = new Random();
+    
+    // Цвета для разноцветного рисования
+    private int[] colors = {
+        Color.RED, Color.BLUE, Color.GREEN, Color.YELLOW, 
+        Color.MAGENTA, Color.CYAN, Color.ORANGE, Color.PINK,
+        Color.LTGRAY, Color.DKGRAY, Color.WHITE
+    };
 
     public PixelArtView(Context context) {
         super(context);
@@ -92,192 +99,156 @@ public class PixelArtView extends View {
     private void drawPixelArt(Canvas canvas) {
         float baseSize = 200f;
         
-        // Рисуем центральный элемент (стилизованный лист/закругленный крест)
-        drawCentralLeaf(canvas, baseSize);
+        // Рисуем два соединенных круга внизу
+        drawConnectedCircles(canvas, baseSize);
         
-        // Рисуем диагональные линии
-        drawDiagonalLines(canvas, baseSize);
-        
-        // Рисуем круговые элементы
-        drawCircularElements(canvas, baseSize);
+        // Рисуем закругленную палку сверху
+        drawRoundedStick(canvas, baseSize);
     }
 
-    private void drawCentralLeaf(Canvas canvas, float baseSize) {
-        float leafWidth = baseSize * 0.5f;
-        float leafHeight = baseSize * 0.7f;
+    private void drawConnectedCircles(Canvas canvas, float baseSize) {
+        float circleRadius = baseSize * 0.25f;
+        float circleDistance = baseSize * 0.15f; // Расстояние между центрами кругов
+        float verticalStretch = 1.2f; // Вертикальное вытягивание
+        
+        // Позиции центров кругов
+        float leftCircleX = -circleDistance / 2f;
+        float rightCircleX = circleDistance / 2f;
+        float circleY = baseSize * 0.3f; // Круги внизу
         
         // Добавляем случайные погрешности
-        float noiseX = (random.nextFloat() - 0.5f) * noiseLevel * leafWidth;
-        float noiseY = (random.nextFloat() - 0.5f) * noiseLevel * leafHeight;
+        float noiseX1 = (random.nextFloat() - 0.5f) * noiseLevel * circleRadius;
+        float noiseY1 = (random.nextFloat() - 0.5f) * noiseLevel * circleRadius;
+        float noiseX2 = (random.nextFloat() - 0.5f) * noiseLevel * circleRadius;
+        float noiseY2 = (random.nextFloat() - 0.5f) * noiseLevel * circleRadius;
         
-        // Рисуем центральный лист как закругленный крест
-        List<PointF> points = new ArrayList<>();
+        // Выбираем случайные цвета для кругов
+        int color1 = colors[random.nextInt(colors.length)];
+        int color2 = colors[random.nextInt(colors.length)];
         
-        // Создаем точки для листа с пикселизацией
-        for (int i = 0; i <= 30; i++) {
-            float t = i / 30f;
-            float x, y;
-            
-            if (t < 0.25f) {
-                // Верхняя часть
-                float localT = t / 0.25f;
-                x = (localT - 0.5f) * leafWidth * 0.3f + noiseX;
-                y = -leafHeight * 0.5f * (1f - 4f * (localT - 0.5f) * (localT - 0.5f)) + noiseY;
-            } else if (t < 0.5f) {
-                // Правая часть
-                float localT = (t - 0.25f) / 0.25f;
-                x = leafWidth * 0.5f * (1f - 4f * (localT - 0.5f) * (localT - 0.5f)) + noiseX;
-                y = (localT - 0.5f) * leafHeight * 0.3f + noiseY;
-            } else if (t < 0.75f) {
-                // Нижняя часть
-                float localT = (t - 0.5f) / 0.25f;
-                x = (localT - 0.5f) * leafWidth * 0.3f + noiseX;
-                y = leafHeight * 0.5f * (1f - 4f * (localT - 0.5f) * (localT - 0.5f)) + noiseY;
-            } else {
-                // Левая часть
-                float localT = (t - 0.75f) / 0.25f;
-                x = -leafWidth * 0.5f * (1f - 4f * (localT - 0.5f) * (localT - 0.5f)) + noiseX;
-                y = (localT - 0.5f) * leafHeight * 0.3f + noiseY;
-            }
-            
-            // Пикселизуем координаты
-            float pixelX = (float) Math.floor(x / pixelSize) * pixelSize;
-            float pixelY = (float) Math.floor(y / pixelSize) * pixelSize;
-            
-            points.add(new PointF(pixelX, pixelY));
-        }
+        // Рисуем левый круг
+        drawPixelatedEllipse(canvas, leftCircleX + noiseX1, circleY + noiseY1, 
+                           circleRadius, circleRadius * verticalStretch, color1);
         
-        // Рисуем лист как набор прямоугольников
-        for (int i = 0; i < points.size() - 1; i++) {
-            PointF point = points.get(i);
-            RectF rect = new RectF(
-                point.x - pixelSize/2,
-                point.y - pixelSize/2,
-                point.x + pixelSize/2,
-                point.y + pixelSize/2
-            );
-            canvas.drawRect(rect, paint);
-        }
+        // Рисуем правый круг
+        drawPixelatedEllipse(canvas, rightCircleX + noiseX2, circleY + noiseY2, 
+                           circleRadius, circleRadius * verticalStretch, color2);
+        
+        // Рисуем область соединения кругов
+        drawConnectionArea(canvas, leftCircleX + noiseX1, rightCircleX + noiseX2, 
+                         circleY + (noiseY1 + noiseY2) / 2f, circleRadius, verticalStretch);
     }
 
-    private void drawDiagonalLines(Canvas canvas, float baseSize) {
-        float lineLength = baseSize * 0.9f;
+    private void drawPixelatedEllipse(Canvas canvas, float centerX, float centerY, 
+                                    float radiusX, float radiusY, int color) {
+        paint.setColor(color);
         
-        // Рисуем 4 диагональные линии
-        float[] angles = {45f, 135f, 225f, 315f};
+        int stepsX = (int) (radiusX * 2 / pixelSize);
+        int stepsY = (int) (radiusY * 2 / pixelSize);
         
-        for (float angle : angles) {
-            double rad = Math.toRadians(angle);
-            float endX = (float) (Math.cos(rad) * lineLength);
-            float endY = (float) (Math.sin(rad) * lineLength);
-            
-            // Добавляем случайные погрешности
-            float noiseX = (random.nextFloat() - 0.5f) * noiseLevel * lineLength;
-            float noiseY = (random.nextFloat() - 0.5f) * noiseLevel * lineLength;
-            
-            // Пикселизуем линию
-            drawPixelatedLine(canvas, 0f, 0f, endX + noiseX, endY + noiseY, pixelSize);
-        }
-    }
-
-    private void drawPixelatedLine(Canvas canvas, float x1, float y1, float x2, float y2, float pixelSize) {
-        float dx = x2 - x1;
-        float dy = y2 - y1;
-        int steps = (int) Math.max(Math.abs(dx / pixelSize), Math.abs(dy / pixelSize));
-        
-        if (steps == 0) return;
-        
-        float xStep = dx / steps;
-        float yStep = dy / steps;
-        
-        for (int i = 0; i <= steps; i++) {
-            float x = x1 + i * xStep;
-            float y = y1 + i * yStep;
-            
-            // Пикселизуем координаты
-            float pixelX = (float) Math.floor(x / pixelSize) * pixelSize;
-            float pixelY = (float) Math.floor(y / pixelSize) * pixelSize;
-            
-            RectF rect = new RectF(
-                pixelX - pixelSize/2,
-                pixelY - pixelSize/2,
-                pixelX + pixelSize/2,
-                pixelY + pixelSize/2
-            );
-            canvas.drawRect(rect, paint);
-        }
-    }
-
-    private void drawCircularElements(Canvas canvas, float baseSize) {
-        float circleRadius = baseSize * 0.18f;
-        float distance = baseSize * 0.45f;
-        
-        // Позиции для 4 кругов
-        PointF[] positions = {
-            new PointF(distance, -distance),
-            new PointF(-distance, -distance),
-            new PointF(-distance, distance),
-            new PointF(distance, distance)
-        };
-        
-        for (PointF pos : positions) {
-            // Добавляем случайные погрешности
-            float noiseX = (random.nextFloat() - 0.5f) * noiseLevel * distance;
-            float noiseY = (random.nextFloat() - 0.5f) * noiseLevel * distance;
-            
-            float centerX = pos.x + noiseX;
-            float centerY = pos.y + noiseY;
-            
-            // Рисуем круг в пиксельном стиле
-            drawPixelatedCircle(canvas, centerX, centerY, circleRadius, pixelSize);
-            
-            // Рисуем внутренний лист в круге
-            drawInnerLeaf(canvas, centerX, centerY, circleRadius * 0.7f, pixelSize);
-        }
-    }
-
-    private void drawPixelatedCircle(Canvas canvas, float centerX, float centerY, float radius, float pixelSize) {
-        int steps = (int) (radius * 2 / pixelSize);
-        
-        for (int i = -steps; i <= steps; i++) {
-            for (int j = -steps; j <= steps; j++) {
+        for (int i = -stepsX; i <= stepsX; i++) {
+            for (int j = -stepsY; j <= stepsY; j++) {
                 float x = centerX + i * pixelSize;
                 float y = centerY + j * pixelSize;
                 
-                float distance = (float) Math.sqrt((x - centerX) * (x - centerX) + (y - centerY) * (y - centerY));
+                // Проверяем, находится ли точка внутри эллипса
+                float normalizedX = (x - centerX) / radiusX;
+                float normalizedY = (y - centerY) / radiusY;
+                float distance = normalizedX * normalizedX + normalizedY * normalizedY;
                 
-                if (distance <= radius && distance > radius - pixelSize) {
+                if (distance <= 1.0f) {
+                    // Пикселизуем координаты
+                    float pixelX = (float) Math.floor(x / pixelSize) * pixelSize;
+                    float pixelY = (float) Math.floor(y / pixelSize) * pixelSize;
+                    
                     RectF rect = new RectF(
-                        x - pixelSize/2,
-                        y - pixelSize/2,
-                        x + pixelSize/2,
-                        y + pixelSize/2
+                        pixelX - pixelSize/2,
+                        pixelY - pixelSize/2,
+                        pixelX + pixelSize/2,
+                        pixelY + pixelSize/2
                     );
-                    canvas.drawRect(rect, strokePaint);
+                    canvas.drawRect(rect, paint);
                 }
             }
         }
     }
 
-    private void drawInnerLeaf(Canvas canvas, float centerX, float centerY, float size, float pixelSize) {
-        float leafWidth = size * 0.8f;
-        float leafHeight = size * 1.0f;
+    private void drawConnectionArea(Canvas canvas, float leftX, float rightX, 
+                                 float centerY, float radius, float stretch) {
+        // Выбираем случайный цвет для области соединения
+        int connectionColor = colors[random.nextInt(colors.length)];
+        paint.setColor(connectionColor);
+        
+        float connectionWidth = (rightX - leftX) * 0.6f; // Ширина области соединения
+        float connectionHeight = radius * stretch * 0.8f;
+        
+        int stepsX = (int) (connectionWidth / pixelSize);
+        int stepsY = (int) (connectionHeight / pixelSize);
+        
+        for (int i = 0; i <= stepsX; i++) {
+            for (int j = -stepsY; j <= stepsY; j++) {
+                float x = leftX + i * pixelSize;
+                float y = centerY + j * pixelSize;
+                
+                // Создаем плавное соединение между кругами
+                float t = i / (float) stepsX;
+                float blendRadius = radius * (0.8f + 0.2f * (float) Math.sin(t * Math.PI));
+                
+                float normalizedX = (x - (leftX + rightX) / 2f) / (connectionWidth / 2f);
+                float normalizedY = (y - centerY) / (blendRadius * stretch);
+                float distance = normalizedX * normalizedX + normalizedY * normalizedY;
+                
+                if (distance <= 1.0f) {
+                    // Пикселизуем координаты
+                    float pixelX = (float) Math.floor(x / pixelSize) * pixelSize;
+                    float pixelY = (float) Math.floor(y / pixelSize) * pixelSize;
+                    
+                    RectF rect = new RectF(
+                        pixelX - pixelSize/2,
+                        pixelY - pixelSize/2,
+                        pixelX + pixelSize/2,
+                        pixelY + pixelSize/2
+                    );
+                    canvas.drawRect(rect, paint);
+                }
+            }
+        }
+    }
+
+    private void drawRoundedStick(Canvas canvas, float baseSize) {
+        float stickWidth = baseSize * 0.15f;
+        float stickHeight = baseSize * 0.8f;
+        float stickStartY = -baseSize * 0.2f; // Начинается выше кругов
         
         // Добавляем случайные погрешности
-        float noiseX = (random.nextFloat() - 0.5f) * noiseLevel * leafWidth;
-        float noiseY = (random.nextFloat() - 0.5f) * noiseLevel * leafHeight;
+        float noiseX = (random.nextFloat() - 0.5f) * noiseLevel * stickWidth;
+        float noiseY = (random.nextFloat() - 0.5f) * noiseLevel * stickHeight;
         
+        // Выбираем случайный цвет для палки
+        int stickColor = colors[random.nextInt(colors.length)];
+        paint.setColor(stickColor);
+        
+        // Рисуем закругленную палку как набор прямоугольников
         List<PointF> points = new ArrayList<>();
         
-        // Создаем точки для внутреннего листа (более простой формы)
-        for (int i = 0; i <= 20; i++) {
-            float t = i / 20f;
-            float x = centerX + (t - 0.5f) * leafWidth + noiseX;
+        // Создаем точки для закругленной палки
+        for (int i = 0; i <= 40; i++) {
+            float t = i / 40f;
+            float x = noiseX;
             float y;
-            if (t < 0.5f) {
-                y = centerY - leafHeight * 0.6f * (1f - 4f * (t - 0.5f) * (t - 0.5f)) + noiseY;
+            
+            if (t < 0.1f) {
+                // Нижняя закругленная часть
+                float localT = t / 0.1f;
+                y = stickStartY + stickHeight * 0.1f * (1f - (float) Math.cos(localT * Math.PI / 2));
+            } else if (t > 0.9f) {
+                // Верхняя закругленная часть
+                float localT = (t - 0.9f) / 0.1f;
+                y = stickStartY + stickHeight * (0.9f + 0.1f * (float) Math.sin(localT * Math.PI / 2));
             } else {
-                y = centerY - leafHeight * 0.4f * (1f - 4f * (t - 0.5f) * (t - 0.5f)) + noiseY;
+                // Прямая часть
+                float localT = (t - 0.1f) / 0.8f;
+                y = stickStartY + stickHeight * (0.1f + 0.8f * localT);
             }
             
             // Пикселизуем координаты
@@ -287,16 +258,28 @@ public class PixelArtView extends View {
             points.add(new PointF(pixelX, pixelY));
         }
         
-        // Рисуем внутренний лист
+        // Рисуем палку как набор прямоугольников
         for (int i = 0; i < points.size() - 1; i++) {
             PointF point = points.get(i);
-            RectF rect = new RectF(
-                point.x - pixelSize/2,
-                point.y - pixelSize/2,
-                point.x + pixelSize/2,
-                point.y + pixelSize/2
-            );
-            canvas.drawRect(rect, paint);
+            
+            // Рисуем горизонтальную линию в каждой точке
+            int lineSteps = (int) (stickWidth / pixelSize);
+            for (int j = -lineSteps/2; j <= lineSteps/2; j++) {
+                float lineX = point.x + j * pixelSize;
+                float lineY = point.y;
+                
+                // Пикселизуем координаты линии
+                float pixelLineX = (float) Math.floor(lineX / pixelSize) * pixelSize;
+                float pixelLineY = (float) Math.floor(lineY / pixelSize) * pixelSize;
+                
+                RectF rect = new RectF(
+                    pixelLineX - pixelSize/2,
+                    pixelLineY - pixelSize/2,
+                    pixelLineX + pixelSize/2,
+                    pixelLineY + pixelSize/2
+                );
+                canvas.drawRect(rect, paint);
+            }
         }
     }
 }
