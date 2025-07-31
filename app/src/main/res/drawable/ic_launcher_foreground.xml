@@ -11,25 +11,25 @@
     
     <circle
         android:fillColor="#FFFFFF"
-        android:cx="30"
-        android:cy="30"
-        android:r="8"/>
+        cx="30"
+        cy="30"
+        r="8"/>
     
     <circle
         android:fillColor="#FFFFFF"
-        android:cx="78"
-        android:cy="30"
-        android:r="8"/>
+        cx="78"
+        cy="30"
+        r="8"/>
     
     <circle
         android:fillColor="#FFFFFF"
-        android:cx="30"
-        android:cy="78"
-        android:r="8"/>
+        cx="30"
+        cy="78"
+        r="8"/>
     
     <circle
         android:fillColor="#FFFFFF"
-        android:cx="78"
-        android:cy="78"
-        android:r="8"/>
+        cx="78"
+        cy="78"
+        r="8"/>
 </vector>
